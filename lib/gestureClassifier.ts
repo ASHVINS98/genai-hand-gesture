@@ -56,8 +56,8 @@ export function classifyGesture(lm: Point[]): string | null {
   // Wave: all 5 extended (thumb must be clearly out)
   if (f.thumb && f.index && f.middle && f.ring && f.pinky) return "wave";
 
-  // Peace: index + middle up, ring + pinky curled, thumb tucked
-  if (f.index && f.middle && !f.ring && !f.pinky && !f.thumb) return "peace";
+  // Peace: index + middle up, ring + pinky curled
+  if (f.index && f.middle && !f.ring && !f.pinky) return "peace";
 
   // Rock on: index + pinky up, middle + ring curled
   if (f.index && !f.middle && !f.ring && f.pinky) return "rockOn";
@@ -66,7 +66,7 @@ export function classifyGesture(lm: Point[]): string | null {
   if (f.thumb && !f.index && !f.middle && !f.ring && f.pinky) return "callMe";
 
   // Point up: only index extended
-  if (f.index && !f.middle && !f.ring && !f.pinky && !f.thumb) return "pointUp";
+  if (f.index && !f.middle && !f.ring && !f.pinky) return "pointUp";
 
   // Fist / thumbsUp / thumbsDown — all 4 fingers curled
   if (allFingersCurled) {

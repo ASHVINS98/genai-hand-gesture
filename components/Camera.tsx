@@ -5,7 +5,8 @@ import { initHandDetector, detectHands } from "@/lib/handDetector";
 import { classifyGestureDual } from "@/lib/gestureClassifier";
 
 interface CameraProps {
-  onGesture: (gesture: string | null) => void;
+  onLiveGesture: (gesture: string | null, progress: number) => void;
+  onConfirmedGesture: (gesture: string) => void;
 }
 
 const HOLD_DURATION_MS = 2000;
@@ -24,7 +25,7 @@ const CONNECTIONS: [number, number][] = [
   [5, 9], [9, 13], [13, 17],
 ];
 
-export function Camera({ onGesture }: CameraProps) {
+export function Camera({ onLiveGesture, onConfirmedGesture }: CameraProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rafRef = useRef<number>(0);
@@ -49,8 +50,10 @@ export function Camera({ onGesture }: CameraProps) {
   const [handsCount, setHandsCount] = useState(0);
   const [holdProgress, setHoldProgress] = useState(0);
 
-  const stableOnGesture = useRef(onGesture);
-  stableOnGesture.current = onGesture;
+  const stableOnLiveGesture = useRef(onLiveGesture);
+  stableOnLiveGesture.current = onLiveGesture;
+  const stableOnConfirmedGesture = useRef(onConfirmedGesture);
+  stableOnConfirmedGesture.current = onConfirmedGesture;
 
   const drawLandmarks = useCallback(
     (allLandmarks: { x: number; y: number; z: number }[][]) => {
@@ -171,14 +174,16 @@ export function Camera({ onGesture }: CameraProps) {
         // Same gesture — reset jitter counter, advance timer
         hold.pendingGesture = null;
         hold.pendingCount = 0;
-        if (gesture && !hold.fired) {
-          const progress = Math.min((now - hold.startTime) / HOLD_DURATION_MS, 1);
+        let progress = 0;
+        if (gesture) {
+          progress = Math.min((now - hold.startTime) / HOLD_DURATION_MS, 1);
           setHoldProgress(progress);
-          if (progress >= 1) {
+          if (progress >= 1 && !hold.fired) {
             hold.fired = true;
-            stableOnGesture.current(gesture);
+            stableOnConfirmedGesture.current(gesture);
           }
         }
+        stableOnLiveGesture.current(gesture, progress);
       } else {
         // Different gesture — only commit after 5 stable frames (jitter guard)
         if (gesture === hold.pendingGesture) {
@@ -194,7 +199,7 @@ export function Camera({ onGesture }: CameraProps) {
           hold.pendingGesture = null;
           hold.pendingCount = 0;
           setHoldProgress(0);
-          if (!gesture) stableOnGesture.current(null);
+          stableOnLiveGesture.current(gesture, 0);
         }
       }
 
