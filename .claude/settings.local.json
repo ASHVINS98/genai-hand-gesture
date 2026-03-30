@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(grep -r generateContentStream c:/Users/ashwa/projects/ai-handgesture/node_modules/@google/genai/dist --include=*.d.ts -l)",
+      "Bash(ls \"c:/Users/ashwa/projects/ai-handgesture/.env\"*)",
+      "Bash(npx tsc:*)"
+    ]
+  }
+}
